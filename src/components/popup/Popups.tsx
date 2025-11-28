@@ -17,6 +17,7 @@ import {useAnalytics} from "../../context/AnalyticsContext";
 import {searchRecipes} from "../../data/mockRecipes";
 import {getMealTypeLabel, getDayFullLabel} from "../../data/mockMealPlan";
 import styles from "./Popups.module.css";
+// const {state, dispatch, navigate} = useApp();
 
 // ============================================
 // EMAIL POPUP
@@ -274,15 +275,20 @@ export const SuccessToast: React.FC<SuccessToastProps> = ({
 type PopupState = "email" | "instagram" | "success" | null;
 
 export const PopupManager: React.FC = () => {
-	const {state, dispatch} = useApp();
+	const {state, dispatch, navigate} = useApp();
 	const [currentPopup, setCurrentPopup] = useState<PopupState>(null);
 	const [successMessage, setSuccessMessage] = useState("");
+	const [pendingAction, setPendingAction] = useState<string | null>(null);
 
 	useEffect(() => {
 		if (state.showPopup && !state.emailCaptured) {
 			setCurrentPopup("email");
+			// Store the trigger so we know where to go after
+			if (state.popupTrigger === "upload") {
+				setPendingAction("upload");
+			}
 		}
-	}, [state.showPopup, state.emailCaptured]);
+	}, [state.showPopup, state.emailCaptured, state.popupTrigger]);
 
 	const handleEmailSuccess = () => {
 		setCurrentPopup("instagram");
@@ -290,6 +296,7 @@ export const PopupManager: React.FC = () => {
 
 	const handleEmailClose = () => {
 		setCurrentPopup(null);
+		setPendingAction(null);
 		dispatch({type: "HIDE_POPUP"});
 	};
 
@@ -297,11 +304,25 @@ export const PopupManager: React.FC = () => {
 		setSuccessMessage("Welcome to MealSpo! 🎉");
 		setCurrentPopup("success");
 		dispatch({type: "HIDE_POPUP"});
+
+		// After closing, navigate to pending action
+		if (pendingAction === "upload") {
+			setTimeout(() => {
+				navigate("upload");
+				setPendingAction(null);
+			}, 2500);
+		}
 	};
 
 	const handleSuccessClose = () => {
 		setCurrentPopup(null);
 		setSuccessMessage("");
+
+		// Navigate to upload if that was the pending action
+		if (pendingAction === "upload") {
+			navigate("upload");
+			setPendingAction(null);
+		}
 	};
 
 	if (!currentPopup) return null;
@@ -324,7 +345,6 @@ export const PopupManager: React.FC = () => {
 		</>
 	);
 };
-
 // ============================================
 // BOTTOM SHEET
 // ============================================

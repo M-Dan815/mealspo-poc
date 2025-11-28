@@ -1,5 +1,5 @@
 import React from "react";
-import {Home, Search, Plus, Calendar, User, ShoppingCart} from "lucide-react";
+import {Home, Search, Plus, Calendar, User} from "lucide-react";
 import {useApp} from "../../../context/AppContext";
 import {useAnalytics} from "../../../context/AnalyticsContext";
 import {NavigationTab} from "../../../types";
@@ -14,9 +14,9 @@ interface NavItem {
 }
 
 export const BottomNav: React.FC = () => {
-	const {state, dispatch, triggerPopup} = useApp();
+	const {state, dispatch, navigate} = useApp();
 	const {trackButtonClick} = useAnalytics();
-	const {activeTab, shoppingList} = state;
+	const {activeTab, shoppingList, emailCaptured} = state;
 
 	const navItems: NavItem[] = [
 		{
@@ -56,7 +56,12 @@ export const BottomNav: React.FC = () => {
 		trackButtonClick(`nav_${item.id}`, "bottom_nav");
 
 		if (item.id === "upload") {
-			triggerPopup("upload");
+			// If email not captured, show popup first, otherwise go to upload
+			if (!emailCaptured) {
+				dispatch({type: "SHOW_POPUP", trigger: "upload"});
+			} else {
+				navigate("upload");
+			}
 			return;
 		}
 

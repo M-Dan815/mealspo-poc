@@ -7,6 +7,7 @@ import {
 	PlannerScreen,
 	BasketScreen,
 	ProfileScreen,
+	UploadScreen,
 } from "./components/screens";
 import styles from "./AppRouter.module.css";
 
@@ -28,6 +29,8 @@ export const AppRouter: React.FC = () => {
 				return <BasketScreen />;
 			case "profile":
 				return <ProfileScreen />;
+			case "upload":
+				return <UploadScreen />;
 			default:
 				return <FeedScreen />;
 		}
