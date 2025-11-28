@@ -1,0 +1,107 @@
+.iconButton {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 50%;
+	cursor: pointer;
+	transition: all var(--transition-fast);
+	border: none;
+	position: relative;
+	-webkit-tap-highlight-color: transparent;
+}
+
+.iconButton:active {
+	transform: scale(0.9);
+}
+
+.iconButton:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+	transform: none;
+}
+
+/* Variants */
+.default {
+	background-color: var(--color-border-light);
+	color: var(--color-text-primary);
+}
+
+.default:hover:not(:disabled) {
+	background-color: var(--color-border);
+}
+
+.primary {
+	background-color: var(--color-primary);
+	color: var(--color-white);
+}
+
+.primary:hover:not(:disabled) {
+	background-color: var(--color-primary-dark);
+}
+
+.ghost {
+	background-color: transparent;
+	color: var(--color-text-primary);
+}
+
+.ghost:hover:not(:disabled) {
+	background-color: var(--color-border-light);
+}
+
+.overlay {
+	background-color: rgba(0, 0, 0, 0.3);
+	color: var(--color-white);
+	backdrop-filter: blur(4px);
+}
+
+.overlay:hover:not(:disabled) {
+	background-color: rgba(0, 0, 0, 0.5);
+}
+
+/* Sizes */
+.small {
+	width: 32px;
+	height: 32px;
+}
+
+.small svg {
+	width: 16px;
+	height: 16px;
+}
+
+.medium {
+	width: 40px;
+	height: 40px;
+}
+
+.medium svg {
+	width: 20px;
+	height: 20px;
+}
+
+.large {
+	width: 48px;
+	height: 48px;
+}
+
+.large svg {
+	width: 24px;
+	height: 24px;
+}
+
+.badge {
+	position: absolute;
+	top: -4px;
+	right: -4px;
+	min-width: 18px;
+	height: 18px;
+	padding: 0 5px;
+	background-color: var(--color-primary);
+	color: var(--color-white);
+	font-size: 10px;
+	font-weight: var(--font-weight-bold);
+	border-radius: var(--radius-full);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}

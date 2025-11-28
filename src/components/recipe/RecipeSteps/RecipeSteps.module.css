@@ -1,0 +1,66 @@
+.stepsContainer {
+	padding: var(--spacing-lg);
+	background-color: var(--color-white);
+}
+
+.title {
+	font-size: var(--font-size-lg);
+	font-weight: var(--font-weight-semibold);
+	color: var(--color-text-primary);
+	margin: 0 0 var(--spacing-md);
+}
+
+.stepsList {
+	display: flex;
+	flex-direction: column;
+	gap: var(--spacing-md);
+	counter-reset: step-counter;
+}
+
+.step {
+	display: flex;
+	gap: var(--spacing-md);
+	cursor: pointer;
+	transition: opacity var(--transition-fast);
+	-webkit-tap-highlight-color: transparent;
+}
+
+.step:active {
+	opacity: 0.8;
+}
+
+.completed {
+	opacity: 0.6;
+}
+
+.completed .stepText {
+	text-decoration: line-through;
+}
+
+.stepNumber {
+	width: 28px;
+	height: 28px;
+	border-radius: 50%;
+	background-color: var(--color-primary);
+	color: var(--color-white);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	font-size: var(--font-size-sm);
+	font-weight: var(--font-weight-semibold);
+	transition: background-color var(--transition-fast);
+}
+
+.completed .stepNumber {
+	background-color: var(--color-success);
+}
+
+.stepText {
+	font-size: var(--font-size-md);
+	line-height: var(--line-height-relaxed);
+	color: var(--color-text-primary);
+	margin: 0;
+	flex: 1;
+	padding-top: 3px;
+}

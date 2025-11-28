@@ -1,0 +1,22 @@
+.pageWrapper {
+	min-height: 100vh;
+	min-height: -webkit-fill-available;
+	background-color: var(--color-background);
+	display: flex;
+	flex-direction: column;
+}
+
+.hasHeader {
+	padding-top: var(--header-height);
+}
+
+.hasBottomNav {
+	padding-bottom: calc(
+		var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px)
+	);
+}
+
+.scrollable {
+	overflow-y: auto;
+	-webkit-overflow-scrolling: touch;
+}

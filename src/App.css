@@ -1,0 +1,247 @@
+#root {
+	max-width: 1280px;
+	margin: 0 auto;
+	padding: 2rem;
+	text-align: center;
+}
+
+.logo {
+	height: 6em;
+	padding: 1.5em;
+	will-change: filter;
+	transition: filter 300ms;
+}
+.logo:hover {
+	filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.react:hover {
+	filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+@keyframes logo-spin {
+	from {
+		transform: rotate(0deg);
+	}
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	a:nth-of-type(2) .logo {
+		animation: logo-spin infinite 20s linear;
+	}
+}
+
+.card {
+	padding: 2em;
+}
+
+.read-the-docs {
+	color: #888;
+}
+
+/* --- Add these styles to your existing App.css --- */
+
+/* --- Explore Page --- */
+.explore-page h2 {
+	text-align: left;
+	padding: 0 15px;
+	margin-bottom: 10px;
+}
+.explore-grid {
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	gap: 10px;
+	padding: 0 10px;
+}
+.explore-grid .recipe-card-link {
+	margin-bottom: 0;
+}
+.explore-grid .recipe-card img {
+	height: 200px;
+}
+
+/* --- Planner Page --- */
+.planner-page {
+	padding: 20px;
+}
+.planner-grid {
+	display: grid;
+	grid-template-columns: repeat(7, 1fr);
+	gap: 10px;
+	margin-bottom: 20px;
+}
+.planner-day h4 {
+	font-size: 0.9em;
+	text-align: center;
+	margin-bottom: 5px;
+}
+.planner-slot {
+	font-size: 0.7em;
+	padding: 8px 4px;
+	background-color: #f0f0f0;
+	border: 1px dashed #ccc;
+	color: #555;
+	border-radius: 8px;
+	margin-bottom: 5px;
+}
+.add-all-to-basket-btn {
+	width: 100%;
+	padding: 15px;
+	background-color: var(--primary-orange);
+	color: white;
+	font-weight: bold;
+	border-radius: 25px;
+}
+
+/* --- Shopping List Page --- */
+.shopping-list-page {
+	padding: 20px;
+}
+.list-subtitle {
+	font-size: 0.9em;
+	color: var(--text-light);
+	text-align: left;
+	margin-bottom: 20px;
+}
+.ingredient-list {
+	margin-bottom: 30px;
+}
+.ingredient-item {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 15px 0;
+	border-bottom: 1px solid var(--border-color);
+}
+.ingredient-item.checked {
+	opacity: 0.5;
+}
+.ingredient-item.checked .ingredient-name {
+	text-decoration: line-through;
+}
+.ingredient-name {
+	flex-grow: 1;
+	text-align: left;
+	font-weight: 500;
+}
+.ingredient-amount {
+	color: var(--text-light);
+	margin-right: 15px;
+}
+.check-toggle {
+	width: 24px;
+	height: 24px;
+	border-radius: 50%;
+	border: 2px solid var(--primary-orange);
+	background-color: white;
+	color: white;
+	font-weight: bold;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+.check-toggle:checked {
+	background-color: var(--primary-orange);
+}
+.order-now-btn {
+	width: 100%;
+	padding: 15px;
+	background-color: var(--primary-orange);
+	color: white;
+	font-weight: bold;
+	border-radius: 25px;
+}
+
+/* --- Profile Page --- */
+.profile-page {
+	padding: 20px;
+}
+.profile-header {
+	display: flex;
+	align-items: flex-start;
+	margin-bottom: 20px;
+	text-align: left;
+}
+.profile-pic {
+	width: 80px;
+	height: 80px;
+	border-radius: 50%;
+	object-fit: cover;
+	margin-right: 20px;
+	border: 2px solid var(--border-color);
+}
+.profile-info h2 {
+	margin: 0 0 5px 0;
+}
+.profile-info p {
+	margin: 0 0 10px 0;
+	font-size: 0.9em;
+}
+.profile-stats {
+	display: flex;
+	gap: 20px;
+	font-size: 0.9em;
+}
+.profile-stats span {
+	text-align: center;
+}
+.profile-posts-grid {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 2px;
+}
+.profile-post-link img {
+	width: 100%;
+	height: 120px;
+	object-fit: cover;
+}
+
+/* --- Upload Page --- */
+.upload-page {
+	padding: 20px;
+	text-align: left;
+}
+.upload-form {
+	display: flex;
+	flex-direction: column;
+	gap: 15px;
+}
+.upload-media-placeholder {
+	height: 250px;
+	background-color: #f0f0f0;
+	border: 2px dashed #ccc;
+	border-radius: 12px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: #888;
+	font-size: 1.1em;
+}
+.upload-input {
+	padding: 12px;
+	border: 1px solid var(--border-color);
+	border-radius: 8px;
+	font-size: 16px;
+}
+.upload-input:focus {
+	outline: none;
+	border-color: var(--primary-orange);
+}
+.upload-meta {
+	display: flex;
+	gap: 10px;
+}
+.meta-input {
+	flex: 1;
+}
+.publish-btn {
+	padding: 15px;
+	background-color: var(--primary-orange);
+	color: white;
+	font-weight: bold;
+	border-radius: 25px;
+	margin-top: 10px;
+}

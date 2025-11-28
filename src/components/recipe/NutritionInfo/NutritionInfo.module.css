@@ -1,0 +1,69 @@
+.nutritionContainer {
+	padding: var(--spacing-lg);
+	background-color: var(--color-white);
+}
+
+.title {
+	font-size: var(--font-size-lg);
+	font-weight: var(--font-weight-semibold);
+	color: var(--color-text-primary);
+	margin: 0 0 var(--spacing-md);
+}
+
+.nutritionGrid {
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	gap: var(--spacing-sm);
+}
+
+.nutritionItem {
+	display: flex;
+	align-items: center;
+	gap: var(--spacing-sm);
+	padding: var(--spacing-md);
+	background-color: var(--color-border-light);
+	border-radius: var(--radius-md);
+}
+
+.iconWrapper {
+	width: 36px;
+	height: 36px;
+	border-radius: 50%;
+	background-color: var(--color-white);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--item-color, var(--color-primary));
+}
+
+.details {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}
+
+.value {
+	font-size: var(--font-size-lg);
+	font-weight: var(--font-weight-bold);
+	color: var(--color-text-primary);
+}
+
+.unit {
+	font-size: var(--font-size-sm);
+	font-weight: var(--font-weight-normal);
+	color: var(--color-text-secondary);
+	margin-left: 2px;
+}
+
+.label {
+	font-size: var(--font-size-xs);
+	color: var(--color-text-tertiary);
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+
+@media (max-width: 360px) {
+	.nutritionGrid {
+		grid-template-columns: 1fr;
+	}
+}

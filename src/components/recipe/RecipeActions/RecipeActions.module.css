@@ -1,0 +1,111 @@
+.actionsContainer {
+	padding: var(--spacing-lg);
+	background-color: var(--color-white);
+	border-top: 1px solid var(--color-border-light);
+}
+
+.servingsControl {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: var(--spacing-lg);
+	padding: var(--spacing-md);
+	background-color: var(--color-border-light);
+	border-radius: var(--radius-md);
+}
+
+.servingsLabel {
+	font-size: var(--font-size-md);
+	font-weight: var(--font-weight-medium);
+	color: var(--color-text-primary);
+}
+
+.servingsButtons {
+	display: flex;
+	align-items: center;
+	gap: var(--spacing-md);
+}
+
+.servingsButton {
+	width: 36px;
+	height: 36px;
+	border-radius: 50%;
+	border: 2px solid var(--color-primary);
+	background-color: var(--color-white);
+	color: var(--color-primary);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+	transition: all var(--transition-fast);
+	-webkit-tap-highlight-color: transparent;
+}
+
+.servingsButton:active:not(:disabled) {
+	background-color: var(--color-primary);
+	color: var(--color-white);
+	transform: scale(0.95);
+}
+
+.servingsButton:disabled {
+	opacity: 0.4;
+	cursor: not-allowed;
+}
+
+.servingsValue {
+	font-size: var(--font-size-xl);
+	font-weight: var(--font-weight-bold);
+	color: var(--color-text-primary);
+	min-width: 32px;
+	text-align: center;
+}
+
+.mainActions {
+	display: flex;
+	flex-direction: column;
+	gap: var(--spacing-sm);
+	margin-bottom: var(--spacing-md);
+}
+
+.successButton {
+	background-color: var(--color-success) !important;
+	animation: pulse 0.3s ease;
+}
+
+.successOutlineButton {
+	border-color: var(--color-success) !important;
+	color: var(--color-success) !important;
+	animation: pulse 0.3s ease;
+}
+
+.shareButton {
+	width: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: var(--spacing-sm);
+	padding: var(--spacing-md);
+	background: none;
+	border: none;
+	color: var(--color-text-secondary);
+	font-size: var(--font-size-md);
+	cursor: pointer;
+	transition: color var(--transition-fast);
+	-webkit-tap-highlight-color: transparent;
+}
+
+.shareButton:active {
+	color: var(--color-primary);
+}
+
+@keyframes pulse {
+	0% {
+		transform: scale(1);
+	}
+	50% {
+		transform: scale(1.02);
+	}
+	100% {
+		transform: scale(1);
+	}
+}

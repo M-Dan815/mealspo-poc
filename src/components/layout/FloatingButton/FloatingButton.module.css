@@ -1,0 +1,100 @@
+.floatingButton {
+	position: fixed;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: var(--spacing-sm);
+	background: linear-gradient(
+		135deg,
+		var(--color-primary) 0%,
+		var(--color-primary-dark) 100%
+	);
+	color: var(--color-white);
+	border: none;
+	border-radius: var(--radius-full);
+	cursor: pointer;
+	z-index: var(--z-sticky);
+	box-shadow: 0 4px 16px rgba(255, 107, 53, 0.4);
+	transition: all var(--transition-fast);
+	-webkit-tap-highlight-color: transparent;
+}
+
+.floatingButton:active {
+	transform: scale(0.95);
+}
+
+.floatingButton:hover {
+	box-shadow: 0 6px 20px rgba(255, 107, 53, 0.5);
+}
+
+.bottom-right {
+	bottom: calc(
+		var(--bottom-nav-height) + var(--spacing-md) +
+			env(safe-area-inset-bottom, 0px)
+	);
+	right: var(--spacing-md);
+	width: 56px;
+	height: 56px;
+}
+
+.bottom-center {
+	bottom: calc(
+		var(--bottom-nav-height) + var(--spacing-md) +
+			env(safe-area-inset-bottom, 0px)
+	);
+	left: 50%;
+	transform: translateX(-50%);
+	padding: var(--spacing-md) var(--spacing-lg);
+	height: 56px;
+}
+
+.bottom-center:active {
+	transform: translateX(-50%) scale(0.95);
+}
+
+.extended {
+	width: auto;
+	padding: var(--spacing-md) var(--spacing-lg);
+}
+
+.iconWrapper {
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.badge {
+	position: absolute;
+	top: -8px;
+	right: -8px;
+	min-width: 20px;
+	height: 20px;
+	padding: 0 6px;
+	background-color: var(--color-white);
+	color: var(--color-primary);
+	font-size: 11px;
+	font-weight: var(--font-weight-bold);
+	border-radius: var(--radius-full);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.label {
+	font-size: var(--font-size-md);
+	font-weight: var(--font-weight-semibold);
+	white-space: nowrap;
+}
+
+@media (max-width: 360px) {
+	.bottom-right {
+		width: 50px;
+		height: 50px;
+		right: var(--spacing-sm);
+	}
+
+	.label {
+		font-size: var(--font-size-sm);
+	}
+}

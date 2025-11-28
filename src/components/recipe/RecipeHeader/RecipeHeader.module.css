@@ -1,0 +1,132 @@
+.headerContainer {
+	position: relative;
+}
+
+.imageWrapper {
+	position: relative;
+	width: 100%;
+	aspect-ratio: 4 / 3;
+	overflow: hidden;
+}
+
+.image {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.overlay {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	height: 50%;
+	background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
+}
+
+.content {
+	padding: var(--spacing-lg);
+	background-color: var(--color-white);
+	margin-top: -40px;
+	position: relative;
+	border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+}
+
+.tags {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--spacing-xs);
+	margin-bottom: var(--spacing-sm);
+}
+
+.title {
+	font-size: var(--font-size-xxl);
+	font-weight: var(--font-weight-bold);
+	color: var(--color-text-primary);
+	margin: 0 0 var(--spacing-sm);
+	line-height: var(--line-height-tight);
+}
+
+.description {
+	font-size: var(--font-size-md);
+	color: var(--color-text-secondary);
+	line-height: var(--line-height-relaxed);
+	margin: 0 0 var(--spacing-md);
+}
+
+.meta {
+	display: flex;
+	align-items: center;
+	gap: var(--spacing-md);
+	margin-bottom: var(--spacing-md);
+}
+
+.metaItem {
+	display: flex;
+	align-items: center;
+	gap: var(--spacing-xs);
+	color: var(--color-text-secondary);
+	font-size: var(--font-size-sm);
+}
+
+.metaDivider {
+	width: 4px;
+	height: 4px;
+	border-radius: 50%;
+	background-color: var(--color-text-tertiary);
+}
+
+.creator {
+	display: flex;
+	align-items: center;
+	gap: var(--spacing-sm);
+	padding: var(--spacing-md);
+	background-color: var(--color-border-light);
+	border-radius: var(--radius-md);
+	margin-bottom: var(--spacing-md);
+}
+
+.creatorInfo {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}
+
+.creatorLabel {
+	font-size: var(--font-size-xs);
+	color: var(--color-text-tertiary);
+}
+
+.creatorName {
+	font-size: var(--font-size-sm);
+	font-weight: var(--font-weight-semibold);
+	color: var(--color-text-primary);
+}
+
+.timeBreakdown {
+	display: flex;
+	justify-content: space-between;
+	padding: var(--spacing-md);
+	background-color: var(--color-primary-bg);
+	border-radius: var(--radius-md);
+}
+
+.timeItem {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 4px;
+}
+
+.timeLabel {
+	font-size: var(--font-size-xs);
+	color: var(--color-text-secondary);
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+
+.timeValue {
+	font-size: var(--font-size-md);
+	font-weight: var(--font-weight-bold);
+	color: var(--color-primary);
+}

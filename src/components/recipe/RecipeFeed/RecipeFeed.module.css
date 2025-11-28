@@ -1,0 +1,53 @@
+.feed {
+	display: flex;
+	flex-direction: column;
+}
+
+.feedItem {
+	animation: fadeIn 0.4s ease forwards;
+	opacity: 0;
+}
+
+.skeletonCard {
+	padding: var(--spacing-md);
+	background-color: var(--color-white);
+	border-bottom: 1px solid var(--color-border-light);
+}
+
+.skeletonHeader {
+	display: flex;
+	align-items: center;
+	gap: var(--spacing-sm);
+	margin-bottom: var(--spacing-sm);
+}
+
+.skeletonContent {
+	display: flex;
+	flex-direction: column;
+	gap: var(--spacing-sm);
+	padding-top: var(--spacing-md);
+}
+
+.loadMoreTrigger {
+	height: 20px;
+}
+
+.endMessage {
+	text-align: center;
+	padding: var(--spacing-xl);
+	color: var(--color-text-tertiary);
+}
+
+.endMessage p {
+	font-size: var(--font-size-md);
+	margin: 0;
+}
+
+@keyframes fadeIn {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
