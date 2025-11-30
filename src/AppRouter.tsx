@@ -1,15 +1,12 @@
 import React from "react";
 import {useApp} from "./context/AppContext";
-import {
-	FeedScreen,
-	ExploreScreen,
-	RecipeDetailScreen,
-	PlannerScreen,
-	BasketScreen,
-	ProfileScreen,
-	UploadScreen,
-} from "./components/screens";
-import styles from "./AppRouter.module.css";
+import {FeedScreen} from "./components/screens/FeedScreen";
+import {ExploreScreen} from "./components/screens/ExploreScreen";
+import {RecipeDetailScreen} from "./components/screens/RecipeDetailScreen";
+import {PlannerScreen} from "./components/screens/PlannerScreen";
+import {BasketScreen} from "./components/screens/BasketScreen";
+import {ProfileScreen} from "./components/screens/ProfileScreen";
+import {UploadScreen} from "./components/screens/UploadScreen";
 
 export const AppRouter: React.FC = () => {
 	const {state} = useApp();
@@ -36,5 +33,5 @@ export const AppRouter: React.FC = () => {
 		}
 	};
 
-	return <div className={styles.router}>{renderScreen()}</div>;
+	return <>{renderScreen()}</>;
 };

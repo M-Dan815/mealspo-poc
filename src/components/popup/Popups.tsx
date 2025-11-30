@@ -33,26 +33,44 @@ const FORMSPREE_ENDPOINT = "https://formspree.io/f/xldqdljo";
 
 const submitEmail = async (email: string, source: string): Promise<boolean> => {
 	try {
-		// Using Formspree
 		const response = await fetch(FORMSPREE_ENDPOINT, {
 			method: "POST",
 			headers: {
-				"Content-Type": "application/json",
 				Accept: "application/json",
+				"Content-Type": "application/json",
 			},
 			body: JSON.stringify({
-				email,
-				source,
-				timestamp: new Date().toISOString(),
-				userAgent: navigator.userAgent,
-				page: window.location.href,
+				email: email,
+				source: source,
+				_subject: `New MealSpo Signup: ${email}`,
 			}),
 		});
+
+		const data = await response.json();
+		console.log("Formspree response:", data);
 
 		return response.ok;
 	} catch (error) {
 		console.error("Email submission error:", error);
-		return false;
+
+		// Fallback: Try form-encoded submission
+		try {
+			const formData = new FormData();
+			formData.append("email", email);
+			formData.append("source", source);
+
+			await fetch(FORMSPREE_ENDPOINT, {
+				method: "POST",
+				body: formData,
+				headers: {
+					Accept: "application/json",
+				},
+			});
+			return true;
+		} catch (fallbackError) {
+			console.error("Fallback also failed:", fallbackError);
+			return false;
+		}
 	}
 };
 

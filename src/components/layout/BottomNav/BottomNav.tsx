@@ -1,22 +1,26 @@
 import React from "react";
-import {Home, Search, Plus, Calendar, User} from "lucide-react";
+import {Home, Search, Plus, Calendar, ShoppingCart, User} from "lucide-react";
 import {useApp} from "../../../context/AppContext";
 import {useAnalytics} from "../../../context/AnalyticsContext";
 import {NavigationTab} from "../../../types";
-import styles from "./BottomNav.module.css";
+import "./BottomNav.css";
 
 interface NavItem {
-	id: NavigationTab;
+	id: NavigationTab | "basket";
 	icon: React.ReactNode;
 	activeIcon: React.ReactNode;
 	label: string;
 	isSpecial?: boolean;
+	screen?: string;
 }
 
 export const BottomNav: React.FC = () => {
 	const {state, dispatch, navigate} = useApp();
 	const {trackButtonClick} = useAnalytics();
-	const {activeTab, shoppingList, emailCaptured} = state;
+	const {activeTab, shoppingList, emailCaptured, currentScreen} = state;
+
+	// Count items not yet owned
+	const cartItemCount = shoppingList.filter((item) => !item.isOwned).length;
 
 	const navItems: NavItem[] = [
 		{
@@ -39,10 +43,11 @@ export const BottomNav: React.FC = () => {
 			isSpecial: true,
 		},
 		{
-			id: "planner",
-			icon: <Calendar size={24} strokeWidth={1.5} />,
-			activeIcon: <Calendar size={24} strokeWidth={2.5} />,
-			label: "Plan",
+			id: "basket",
+			icon: <ShoppingCart size={24} strokeWidth={1.5} />,
+			activeIcon: <ShoppingCart size={24} strokeWidth={2.5} />,
+			label: "Cart",
+			screen: "basket",
 		},
 		{
 			id: "profile",
@@ -56,7 +61,6 @@ export const BottomNav: React.FC = () => {
 		trackButtonClick(`nav_${item.id}`, "bottom_nav");
 
 		if (item.id === "upload") {
-			// If email not captured, show popup first, otherwise go to upload
 			if (!emailCaptured) {
 				dispatch({type: "SHOW_POPUP", trigger: "upload"});
 			} else {
@@ -65,26 +69,34 @@ export const BottomNav: React.FC = () => {
 			return;
 		}
 
-		dispatch({type: "SET_ACTIVE_TAB", tab: item.id});
+		if (item.id === "basket") {
+			navigate("basket");
+			return;
+		}
+
+		dispatch({type: "SET_ACTIVE_TAB", tab: item.id as NavigationTab});
 	};
 
-	const cartItemsCount = shoppingList.filter((item) => !item.isOwned).length;
+	const isActive = (itemId: string) => {
+		if (itemId === "basket") return currentScreen === "basket";
+		return activeTab === itemId;
+	};
 
 	return (
-		<nav className={styles.bottomNav}>
-			<div className={styles.container}>
+		<nav className="bottom-nav">
+			<div className="nav-container">
 				{navItems.map((item) => {
-					const isActive = activeTab === item.id;
+					const active = isActive(item.id);
 
 					if (item.isSpecial) {
 						return (
 							<button
 								key={item.id}
-								className={styles.specialButton}
+								className="nav-special-btn"
 								onClick={() => handleNavClick(item)}
 								aria-label={item.label}
 							>
-								<div className={styles.specialButtonInner}>{item.icon}</div>
+								<div className="nav-special-inner">{item.icon}</div>
 							</button>
 						);
 					}
@@ -92,19 +104,19 @@ export const BottomNav: React.FC = () => {
 					return (
 						<button
 							key={item.id}
-							className={`${styles.navItem} ${isActive ? styles.active : ""}`}
+							className={`nav-item ${active ? "active" : ""}`}
 							onClick={() => handleNavClick(item)}
 							aria-label={item.label}
 						>
-							<div className={styles.iconWrapper}>
-								{isActive ? item.activeIcon : item.icon}
-								{item.id === "planner" && cartItemsCount > 0 && (
-									<span className={styles.badge}>
-										{cartItemsCount > 9 ? "9+" : cartItemsCount}
+							<div className="nav-icon-wrapper">
+								{active ? item.activeIcon : item.icon}
+								{item.id === "basket" && cartItemCount > 0 && (
+									<span className="nav-badge">
+										{cartItemCount > 9 ? "9+" : cartItemCount}
 									</span>
 								)}
 							</div>
-							<span className={styles.label}>{item.label}</span>
+							<span className="nav-label">{item.label}</span>
 						</button>
 					);
 				})}
