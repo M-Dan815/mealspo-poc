@@ -3,7 +3,6 @@ export {
 	InstagramPopup,
 	SuccessToast,
 	PopupManager,
-	BottomSheet,
-	ActionSheet,
 	RecipeSelectorSheet,
+	ActionSheet,
 } from "./Popups";
