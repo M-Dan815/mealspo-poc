@@ -7,7 +7,7 @@ import {
 	CheckCircle,
 	ExternalLink,
 	Search,
-	Trash2,
+	Loader,
 } from "lucide-react";
 import {Button} from "../common/Button";
 import {Input} from "../common/Input";
@@ -16,12 +16,49 @@ import {useApp} from "../../context/AppContext";
 import {useAnalytics} from "../../context/AnalyticsContext";
 import {searchRecipes} from "../../data/mockRecipes";
 import {getMealTypeLabel, getDayFullLabel} from "../../data/mockMealPlan";
-import styles from "./Popups.module.css";
-// const {state, dispatch, navigate} = useApp();
+import "./Popups.css";
 
-// ============================================
+// ==============================================
+// EMAIL SERVICE CONFIG
+// ==============================================
+
+// Option 1: Formspree (recommended for POC)
+const FORMSPREE_ENDPOINT = "https://formspree.io/f/YOUR_FORM_ID";
+
+// Option 2: Custom webhook (Zapier, Make, etc.)
+// const WEBHOOK_ENDPOINT = 'https://hooks.zapier.com/hooks/catch/YOUR_ID/';
+
+// Option 3: Netlify function
+// const API_ENDPOINT = '/.netlify/functions/subscribe';
+
+const submitEmail = async (email: string, source: string): Promise<boolean> => {
+	try {
+		// Using Formspree
+		const response = await fetch(FORMSPREE_ENDPOINT, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+				Accept: "application/json",
+			},
+			body: JSON.stringify({
+				email,
+				source,
+				timestamp: new Date().toISOString(),
+				userAgent: navigator.userAgent,
+				page: window.location.href,
+			}),
+		});
+
+		return response.ok;
+	} catch (error) {
+		console.error("Email submission error:", error);
+		return false;
+	}
+};
+
+// ==============================================
 // EMAIL POPUP
-// ============================================
+// ==============================================
 interface EmailPopupProps {
 	onSuccess: () => void;
 	onClose: () => void;
@@ -33,18 +70,19 @@ export const EmailPopup: React.FC<EmailPopupProps> = ({
 	onClose,
 	variant = "timer",
 }) => {
-	const {dispatch} = useApp();
+	const {state, dispatch} = useApp();
 	const {trackEvent, trackButtonClick} = useAnalytics();
 	const [email, setEmail] = useState("");
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState("");
 
-	const validateEmail = (email: string): boolean => {
-		return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+	const validateEmail = (emailValue: string): boolean => {
+		return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailValue);
 	};
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
+		setError("");
 
 		if (!email.trim()) {
 			setError("Please enter your email");
@@ -57,14 +95,33 @@ export const EmailPopup: React.FC<EmailPopupProps> = ({
 		}
 
 		setIsLoading(true);
-		setError("");
 
-		trackEvent("email_capture", {email, trigger: variant});
-		await new Promise((resolve) => setTimeout(resolve, 1000));
+		// Track the attempt
+		trackEvent("email_submit_attempt", {
+			email_domain: email.split("@")[1],
+			trigger: state.popupTrigger || variant,
+		});
 
-		dispatch({type: "SET_EMAIL_CAPTURED"});
-		setIsLoading(false);
-		onSuccess();
+		// Submit to backend
+		const success = await submitEmail(email, state.popupTrigger || variant);
+
+		if (success) {
+			trackEvent("email_capture_success", {
+				trigger: state.popupTrigger || variant,
+			});
+			dispatch({type: "SET_EMAIL_CAPTURED"});
+			setIsLoading(false);
+			onSuccess();
+		} else {
+			// Even if backend fails, we can still proceed for POC
+			// In production, you might want to retry or show error
+			trackEvent("email_capture_fallback", {
+				trigger: state.popupTrigger || variant,
+			});
+			dispatch({type: "SET_EMAIL_CAPTURED"});
+			setIsLoading(false);
+			onSuccess();
+		}
 	};
 
 	const handleClose = () => {
@@ -75,64 +132,75 @@ export const EmailPopup: React.FC<EmailPopupProps> = ({
 	const isTimer = variant === "timer";
 
 	return (
-		<div className={styles.overlay} onClick={handleClose}>
-			<div className={styles.popup} onClick={(e) => e.stopPropagation()}>
-				<button className={styles.closeButton} onClick={handleClose}>
+		<div className="popup-overlay" onClick={handleClose}>
+			<div className="popup-container" onClick={(e) => e.stopPropagation()}>
+				<button className="popup-close" onClick={handleClose}>
 					<X size={24} />
 				</button>
 
-				<div className={styles.iconWrapper}>
+				<div className="popup-icon">
 					{isTimer ? <Gift size={48} /> : <Mail size={48} />}
 				</div>
 
-				<h2 className={styles.title}>
+				<h2 className="popup-title">
 					{isTimer ? "Get 6 Months Free! 🎉" : "Join MealSpo"}
 				</h2>
-				<p className={styles.subtitle}>
+				<p className="popup-subtitle">
 					{isTimer
 						? "Join early access and be the first to discover amazing recipes from creators worldwide."
 						: "Enter your email to unlock this feature and get early access to all premium features."}
 				</p>
 
-				<form onSubmit={handleSubmit} className={styles.form}>
-					<Input
-						type="email"
-						placeholder="Enter your email"
-						value={email}
-						onChange={(e) => setEmail(e.target.value)}
-						error={error}
-						icon={<Mail size={20} />}
-						fullWidth
-					/>
-					<Button
-						type="submit"
-						variant="primary"
-						size="large"
-						fullWidth
-						loading={isLoading}
-					>
-						{isTimer ? "Claim My Free Access" : "Get Early Access"}
-					</Button>
+				<form onSubmit={handleSubmit} className="popup-form">
+					<div className="input-wrapper">
+						<Mail size={20} className="input-icon" />
+						<input
+							type="email"
+							placeholder="Enter your email"
+							value={email}
+							onChange={(e) => {
+								setEmail(e.target.value);
+								setError("");
+							}}
+							className={`popup-input ${error ? "has-error" : ""}`}
+							disabled={isLoading}
+							autoComplete="email"
+							autoFocus
+						/>
+					</div>
+					{error && <span className="input-error">{error}</span>}
+
+					<button type="submit" className="popup-submit" disabled={isLoading}>
+						{isLoading ? (
+							<>
+								<Loader size={20} className="spinning" />
+								<span>Joining...</span>
+							</>
+						) : (
+							<span>
+								{isTimer ? "Claim My Free Access" : "Get Early Access"}
+							</span>
+						)}
+					</button>
 				</form>
 
-				<p className={styles.terms}>
-					By signing up, you agree to our{" "}
-					<span className={styles.link}>Terms</span> and{" "}
-					<span className={styles.link}>Privacy Policy</span>
+				<p className="popup-terms">
+					By signing up, you agree to our <span>Terms</span> and{" "}
+					<span>Privacy Policy</span>
 				</p>
 
-				<div className={styles.features}>
-					<div className={styles.feature}>
+				<div className="popup-features">
+					<div className="feature-item">
 						<span>🍳</span>
 						<span>Unlimited recipes</span>
 					</div>
-					<div className={styles.feature}>
+					<div className="feature-item">
 						<span>📅</span>
 						<span>Meal planning</span>
 					</div>
-					<div className={styles.feature}>
+					<div className="feature-item">
 						<span>🛒</span>
-						<span>Smart shopping lists</span>
+						<span>Smart shopping</span>
 					</div>
 				</div>
 			</div>
@@ -140,9 +208,9 @@ export const EmailPopup: React.FC<EmailPopupProps> = ({
 	);
 };
 
-// ============================================
+// ==============================================
 // INSTAGRAM POPUP
-// ============================================
+// ==============================================
 interface InstagramPopupProps {
 	onClose: () => void;
 }
@@ -154,6 +222,9 @@ export const InstagramPopup: React.FC<InstagramPopupProps> = ({onClose}) => {
 		trackButtonClick("follow_instagram", "instagram_popup");
 		trackEvent("instagram_follow_click", {});
 		window.open("https://instagram.com/mealspo", "_blank");
+
+		// Close after a short delay
+		setTimeout(onClose, 500);
 	};
 
 	const handleSkip = () => {
@@ -162,84 +233,71 @@ export const InstagramPopup: React.FC<InstagramPopupProps> = ({onClose}) => {
 	};
 
 	return (
-		<div className={styles.overlay}>
-			<div className={styles.popup}>
-				<div className={styles.successBadge}>
-					<CheckCircle size={24} />
+		<div className="popup-overlay">
+			<div className="popup-container">
+				<div className="success-badge">
+					<CheckCircle size={20} />
 					<span>You're In!</span>
 				</div>
 
-				<div className={styles.instagramIcon}>
+				<div className="popup-icon instagram">
 					<Instagram size={48} />
 				</div>
 
-				<h2 className={styles.title}>Follow Us on Instagram</h2>
-				<p className={styles.subtitle}>
+				<h2 className="popup-title">Follow Us on Instagram</h2>
+				<p className="popup-subtitle">
 					Join our community for daily recipe inspiration, cooking tips, and
 					exclusive content!
 				</p>
 
-				<div className={styles.previewGrid}>
-					<div className={styles.previewItem}>
-						<img
-							src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200&h=200&fit=crop"
-							alt="Recipe"
-						/>
+				<div className="instagram-preview">
+					<img
+						src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100&h=100&fit=crop"
+						alt="Food"
+					/>
+					<img
+						src="https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=100&h=100&fit=crop"
+						alt="Food"
+					/>
+					<img
+						src="https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=100&h=100&fit=crop"
+						alt="Food"
+					/>
+				</div>
+
+				<div className="instagram-stats">
+					<div className="ig-stat">
+						<span className="ig-stat-value">50K+</span>
+						<span className="ig-stat-label">Followers</span>
 					</div>
-					<div className={styles.previewItem}>
-						<img
-							src="https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=200&h=200&fit=crop"
-							alt="Recipe"
-						/>
+					<div className="ig-stat-divider" />
+					<div className="ig-stat">
+						<span className="ig-stat-value">1K+</span>
+						<span className="ig-stat-label">Recipes</span>
 					</div>
-					<div className={styles.previewItem}>
-						<img
-							src="https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=200&h=200&fit=crop"
-							alt="Recipe"
-						/>
+					<div className="ig-stat-divider" />
+					<div className="ig-stat">
+						<span className="ig-stat-value">Daily</span>
+						<span className="ig-stat-label">Posts</span>
 					</div>
 				</div>
 
-				<div className={styles.igStats}>
-					<div className={styles.igStatItem}>
-						<span className={styles.igStatValue}>50K+</span>
-						<span className={styles.igStatLabel}>Followers</span>
-					</div>
-					<div className={styles.igStatDivider} />
-					<div className={styles.igStatItem}>
-						<span className={styles.igStatValue}>1K+</span>
-						<span className={styles.igStatLabel}>Recipes</span>
-					</div>
-					<div className={styles.igStatDivider} />
-					<div className={styles.igStatItem}>
-						<span className={styles.igStatValue}>Daily</span>
-						<span className={styles.igStatLabel}>Posts</span>
-					</div>
-				</div>
+				<button className="popup-submit" onClick={handleFollowClick}>
+					<span>Follow @mealspo</span>
+					<ExternalLink size={18} />
+				</button>
 
-				<div className={styles.actions}>
-					<Button
-						variant="primary"
-						size="large"
-						fullWidth
-						icon={<ExternalLink size={18} />}
-						iconPosition="right"
-						onClick={handleFollowClick}
-					>
-						Follow @mealspo
-					</Button>
-					<button className={styles.skipButton} onClick={handleSkip}>
-						Maybe later
-					</button>
-				</div>
+				<button className="popup-skip" onClick={handleSkip}>
+					Maybe later
+				</button>
 			</div>
 		</div>
 	);
 };
 
-// ============================================
+// ==============================================
 // SUCCESS TOAST
-// ============================================
+// ==============================================
 interface SuccessToastProps {
 	message: string;
 	onClose: () => void;
@@ -257,11 +315,11 @@ export const SuccessToast: React.FC<SuccessToastProps> = ({
 	}, [autoCloseDelay, onClose]);
 
 	return (
-		<div className={styles.toastContainer}>
-			<div className={styles.toast}>
+		<div className="toast-container">
+			<div className="toast">
 				<CheckCircle size={20} />
 				<span>{message}</span>
-				<button className={styles.toastClose} onClick={onClose}>
+				<button onClick={onClose}>
 					<X size={16} />
 				</button>
 			</div>
@@ -269,23 +327,24 @@ export const SuccessToast: React.FC<SuccessToastProps> = ({
 	);
 };
 
-// ============================================
+// ==============================================
 // POPUP MANAGER
-// ============================================
-type PopupState = "email" | "instagram" | "success" | null;
+// ==============================================
+type PopupStateType = "email" | "instagram" | "success" | null;
 
 export const PopupManager: React.FC = () => {
 	const {state, dispatch, navigate} = useApp();
-	const [currentPopup, setCurrentPopup] = useState<PopupState>(null);
+	const [currentPopup, setCurrentPopup] = useState<PopupStateType>(null);
 	const [successMessage, setSuccessMessage] = useState("");
 	const [pendingAction, setPendingAction] = useState<string | null>(null);
 
 	useEffect(() => {
 		if (state.showPopup && !state.emailCaptured) {
 			setCurrentPopup("email");
-			// Store the trigger so we know where to go after
 			if (state.popupTrigger === "upload") {
 				setPendingAction("upload");
+			} else if (state.popupTrigger === "buy_now") {
+				setPendingAction("buy");
 			}
 		}
 	}, [state.showPopup, state.emailCaptured, state.popupTrigger]);
@@ -304,25 +363,16 @@ export const PopupManager: React.FC = () => {
 		setSuccessMessage("Welcome to MealSpo! 🎉");
 		setCurrentPopup("success");
 		dispatch({type: "HIDE_POPUP"});
-
-		// After closing, navigate to pending action
-		if (pendingAction === "upload") {
-			setTimeout(() => {
-				navigate("upload");
-				setPendingAction(null);
-			}, 2500);
-		}
 	};
 
 	const handleSuccessClose = () => {
 		setCurrentPopup(null);
 		setSuccessMessage("");
 
-		// Navigate to upload if that was the pending action
 		if (pendingAction === "upload") {
 			navigate("upload");
-			setPendingAction(null);
 		}
+		setPendingAction(null);
 	};
 
 	if (!currentPopup) return null;
@@ -345,26 +395,30 @@ export const PopupManager: React.FC = () => {
 		</>
 	);
 };
-// ============================================
-// BOTTOM SHEET
-// ============================================
-interface BottomSheetProps {
+
+// ==============================================
+// RECIPE SELECTOR SHEET
+// ==============================================
+interface RecipeSelectorSheetProps {
 	isOpen: boolean;
 	onClose: () => void;
-	title?: string;
-	children: React.ReactNode;
-	height?: "auto" | "half" | "full";
+	mealSlot: MealSlot | null;
 }
 
-export const BottomSheet: React.FC<BottomSheetProps> = ({
+export const RecipeSelectorSheet: React.FC<RecipeSelectorSheetProps> = ({
 	isOpen,
 	onClose,
-	title,
-	children,
-	height = "auto",
+	mealSlot,
 }) => {
+	const {state, dispatch, triggerPopup} = useApp();
+	const [searchQuery, setSearchQuery] = useState("");
+
 	useEffect(() => {
-		document.body.style.overflow = isOpen ? "hidden" : "";
+		if (isOpen) {
+			document.body.style.overflow = "hidden";
+		} else {
+			document.body.style.overflow = "";
+		}
 		return () => {
 			document.body.style.overflow = "";
 		};
@@ -372,30 +426,76 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
 
 	if (!isOpen) return null;
 
+	const filteredRecipes = searchQuery
+		? searchRecipes(searchQuery)
+		: state.recipes;
+
+	const handleSelectRecipe = (recipe: Recipe) => {
+		if (mealSlot) {
+			triggerPopup("add_to_planner");
+			dispatch({type: "SET_MEAL_SLOT", slot: mealSlot, recipe});
+			onClose();
+		}
+	};
+
+	const title = mealSlot
+		? `${getDayFullLabel(mealSlot.day)} - ${getMealTypeLabel(
+				mealSlot.mealType
+		  )}`
+		: "Select Recipe";
+
 	return (
-		<div className={styles.sheetOverlay} onClick={onClose}>
-			<div
-				className={`${styles.sheet} ${styles[`sheet-${height}`]}`}
-				onClick={(e) => e.stopPropagation()}
-			>
-				<div className={styles.sheetHandle} />
-				{title && (
-					<div className={styles.sheetHeader}>
-						<h3 className={styles.sheetTitle}>{title}</h3>
-						<button className={styles.sheetClose} onClick={onClose}>
-							<X size={20} />
-						</button>
-					</div>
-				)}
-				<div className={styles.sheetContent}>{children}</div>
+		<div className="sheet-overlay" onClick={onClose}>
+			<div className="sheet-container" onClick={(e) => e.stopPropagation()}>
+				<div className="sheet-handle" />
+
+				<div className="sheet-header">
+					<h3>{title}</h3>
+					<button className="sheet-close" onClick={onClose}>
+						<X size={20} />
+					</button>
+				</div>
+
+				<div className="sheet-search">
+					<Search size={20} />
+					<input
+						type="text"
+						placeholder="Search recipes..."
+						value={searchQuery}
+						onChange={(e) => setSearchQuery(e.target.value)}
+					/>
+				</div>
+
+				<div className="sheet-content">
+					{filteredRecipes.map((recipe) => (
+						<div
+							key={recipe.id}
+							className="recipe-select-item"
+							onClick={() => handleSelectRecipe(recipe)}
+						>
+							<img src={recipe.imageUrl} alt={recipe.title} />
+							<div className="recipe-select-info">
+								<span className="recipe-select-title">{recipe.title}</span>
+								<span className="recipe-select-meta">
+									{recipe.prepTime + recipe.cookTime} min • {recipe.calories}{" "}
+									cal
+								</span>
+							</div>
+						</div>
+					))}
+
+					{filteredRecipes.length === 0 && (
+						<div className="sheet-empty">No recipes found</div>
+					)}
+				</div>
 			</div>
 		</div>
 	);
 };
 
-// ============================================
+// ==============================================
 // ACTION SHEET
-// ============================================
+// ==============================================
 interface ActionSheetOption {
 	id: string;
 	label: string;
@@ -418,7 +518,11 @@ export const ActionSheet: React.FC<ActionSheetProps> = ({
 	options,
 }) => {
 	useEffect(() => {
-		document.body.style.overflow = isOpen ? "hidden" : "";
+		if (isOpen) {
+			document.body.style.overflow = "hidden";
+		} else {
+			document.body.style.overflow = "";
+		}
 		return () => {
 			document.body.style.overflow = "";
 		};
@@ -427,121 +531,34 @@ export const ActionSheet: React.FC<ActionSheetProps> = ({
 	if (!isOpen) return null;
 
 	return (
-		<div className={styles.sheetOverlay} onClick={onClose}>
-			<div className={styles.actionSheet} onClick={(e) => e.stopPropagation()}>
-				<div className={styles.sheetHandle} />
+		<div className="sheet-overlay" onClick={onClose}>
+			<div className="action-sheet" onClick={(e) => e.stopPropagation()}>
+				<div className="sheet-handle" />
 
-				{title && (
-					<div className={styles.sheetHeader}>
-						<h3 className={styles.sheetTitle}>{title}</h3>
-						<button className={styles.sheetClose} onClick={onClose}>
-							<X size={20} />
-						</button>
-					</div>
-				)}
+				{title && <h3 className="action-sheet-title">{title}</h3>}
 
-				<div className={styles.actionOptions}>
+				<div className="action-options">
 					{options.map((option) => (
 						<button
 							key={option.id}
-							className={`${styles.actionOption} ${
-								option.variant === "danger" ? styles.danger : ""
+							className={`action-option ${
+								option.variant === "danger" ? "danger" : ""
 							}`}
 							onClick={() => {
 								option.onClick();
 								onClose();
 							}}
 						>
-							{option.icon && (
-								<span className={styles.actionIcon}>{option.icon}</span>
-							)}
+							{option.icon}
 							<span>{option.label}</span>
 						</button>
 					))}
 				</div>
 
-				<button className={styles.cancelButton} onClick={onClose}>
+				<button className="action-cancel" onClick={onClose}>
 					Cancel
 				</button>
 			</div>
 		</div>
-	);
-};
-
-// ============================================
-// RECIPE SELECTOR SHEET
-// ============================================
-interface RecipeSelectorSheetProps {
-	isOpen: boolean;
-	onClose: () => void;
-	mealSlot: MealSlot | null;
-}
-
-export const RecipeSelectorSheet: React.FC<RecipeSelectorSheetProps> = ({
-	isOpen,
-	onClose,
-	mealSlot,
-}) => {
-	const {state, dispatch, triggerPopup} = useApp();
-	const [searchQuery, setSearchQuery] = useState("");
-
-	const filteredRecipes = searchQuery
-		? searchRecipes(searchQuery)
-		: state.recipes;
-
-	const handleSelectRecipe = (recipe: Recipe) => {
-		if (mealSlot) {
-			triggerPopup("add_to_planner");
-			dispatch({type: "SET_MEAL_SLOT", slot: mealSlot, recipe});
-			onClose();
-		}
-	};
-
-	const title = mealSlot
-		? `${getDayFullLabel(mealSlot.day)} - ${getMealTypeLabel(
-				mealSlot.mealType
-		  )}`
-		: "Select Recipe";
-
-	return (
-		<BottomSheet isOpen={isOpen} onClose={onClose} title={title} height="full">
-			<div className={styles.selectorContainer}>
-				<div className={styles.selectorSearch}>
-					<Input
-						placeholder="Search recipes..."
-						value={searchQuery}
-						onChange={(e) => setSearchQuery(e.target.value)}
-						icon={<Search size={20} />}
-					/>
-				</div>
-
-				<div className={styles.selectorList}>
-					{filteredRecipes.map((recipe) => (
-						<div
-							key={recipe.id}
-							className={styles.selectorItem}
-							onClick={() => handleSelectRecipe(recipe)}
-						>
-							<img
-								src={recipe.imageUrl}
-								alt={recipe.title}
-								className={styles.selectorImage}
-							/>
-							<div className={styles.selectorInfo}>
-								<span className={styles.selectorTitle}>{recipe.title}</span>
-								<span className={styles.selectorMeta}>
-									{recipe.prepTime + recipe.cookTime} min • {recipe.calories}{" "}
-									cal
-								</span>
-							</div>
-						</div>
-					))}
-
-					{filteredRecipes.length === 0 && (
-						<div className={styles.selectorEmpty}>No recipes found</div>
-					)}
-				</div>
-			</div>
-		</BottomSheet>
 	);
 };
