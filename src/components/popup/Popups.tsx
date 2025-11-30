@@ -23,7 +23,7 @@ import "./Popups.css";
 // ==============================================
 
 // Option 1: Formspree (recommended for POC)
-const FORMSPREE_ENDPOINT = "https://formspree.io/f/YOUR_FORM_ID";
+const FORMSPREE_ENDPOINT = "https://formspree.io/f/xldqdljo";
 
 // Option 2: Custom webhook (Zapier, Make, etc.)
 // const WEBHOOK_ENDPOINT = 'https://hooks.zapier.com/hooks/catch/YOUR_ID/';
