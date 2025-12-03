@@ -4,8 +4,93 @@
 }
 
 .feedItem {
+	position: relative;
 	animation: fadeIn 0.4s ease forwards;
 	opacity: 0;
+}
+
+/* Live Order Counter Badge - More Prominent */
+.orderCountBadge {
+	position: absolute;
+	top: var(--spacing-md);
+	right: var(--spacing-md);
+	background: linear-gradient(
+		135deg,
+		var(--color-primary) 0%,
+		var(--color-primary-dark) 100%
+	);
+	color: var(--color-white);
+	padding: var(--spacing-sm) var(--spacing-md);
+	border-radius: var(--radius-full);
+	display: flex;
+	align-items: center;
+	gap: var(--spacing-xs);
+	font-size: var(--font-size-sm);
+	font-weight: var(--font-weight-bold);
+	z-index: 10;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15), 0 0 0 3px rgba(255, 255, 255, 0.9);
+	transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.orderCountBadge:hover {
+	transform: scale(1.05);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2), 0 0 0 3px rgba(255, 255, 255, 0.9);
+}
+
+.orderCountBadge svg {
+	flex-shrink: 0;
+	filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+}
+
+.orderCount {
+	font-weight: var(--font-weight-bold);
+	font-size: var(--font-size-md);
+	letter-spacing: -0.02em;
+	text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+	min-width: 24px;
+	text-align: center;
+}
+
+.orderLabel {
+	font-size: var(--font-size-xs);
+	font-weight: var(--font-weight-medium);
+	opacity: 0.95;
+	text-transform: lowercase;
+}
+
+/* Pulse animation when count updates */
+@keyframes countPulse {
+	0% {
+		transform: scale(1);
+	}
+	50% {
+		transform: scale(1.2);
+	}
+	100% {
+		transform: scale(1);
+	}
+}
+
+.orderCount.updated {
+	animation: countPulse 0.4s ease-out;
+}
+
+/* Glow effect for popular recipes (over 500 orders) */
+.orderCountBadge.popular {
+	animation: popularGlow 2s ease-in-out infinite;
+}
+
+@keyframes popularGlow {
+	0%,
+	100% {
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15),
+			0 0 0 3px rgba(255, 255, 255, 0.9);
+	}
+	50% {
+		box-shadow: 0 2px 12px rgba(var(--color-primary-rgb), 0.4),
+			0 0 0 3px rgba(255, 255, 255, 0.9),
+			0 0 20px rgba(var(--color-primary-rgb), 0.2);
+	}
 }
 
 .skeletonCard {
@@ -49,5 +134,27 @@
 	}
 	to {
 		opacity: 1;
+	}
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+	.orderCountBadge {
+		padding: 8px 12px;
+		font-size: var(--font-size-xs);
+		gap: 6px;
+	}
+
+	.orderCountBadge svg {
+		width: 14px;
+		height: 14px;
+	}
+
+	.orderCount {
+		font-size: var(--font-size-sm);
+	}
+
+	.orderLabel {
+		font-size: 10px;
 	}
 }

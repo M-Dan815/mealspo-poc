@@ -71,7 +71,8 @@ export type DayOfWeek =
 	| "saturday"
 	| "sunday";
 
-export type MealType = "breakfast" | "lunch" | "dinner";
+// UPDATED: Added "dessert" and "snack" to the MealType union.
+export type MealType = "breakfast" | "lunch" | "dinner" | "dessert" | "snack";
 
 export interface MealSlot {
 	id: string;

@@ -20,7 +20,14 @@ const days: DayOfWeek[] = [
 	"saturday",
 	"sunday",
 ];
-const mealTypes: MealType[] = ["breakfast", "lunch", "dinner"];
+
+const mealTypes: MealType[] = [
+	"breakfast",
+	"lunch",
+	"dinner",
+	"dessert",
+	"snack",
+];
 
 export const PlannerScreen: React.FC = () => {
 	const {state, dispatch, navigate, triggerPopup} = useApp();
@@ -50,8 +57,26 @@ export const PlannerScreen: React.FC = () => {
 		dispatch({type: "CHANGE_WEEK", direction: "next"});
 	};
 
-	const handleSlotClick = (slot: MealSlot) => {
-		trackButtonClick("meal_slot", `${slot.day}_${slot.mealType}`);
+	const getMealForSlot = (day: DayOfWeek, mealType: MealType): MealSlot => {
+		const existingSlot = state.weekPlan.meals.find(
+			(m) => m.day === day && m.mealType === mealType
+		);
+
+		// Return existing slot or create a default one
+		return (
+			existingSlot || {
+				id: `${day}-${mealType}`,
+				day,
+				mealType,
+				recipe: null,
+			}
+		);
+	};
+
+	const handleSlotClick = (day: DayOfWeek, mealType: MealType) => {
+		trackButtonClick("meal_slot", `${day}_${mealType}`);
+		const slot = getMealForSlot(day, mealType);
+
 		if (slot.recipe) {
 			navigate("recipe", slot.recipe.id);
 		} else {
@@ -81,15 +106,11 @@ export const PlannerScreen: React.FC = () => {
 		navigate("basket");
 	};
 
-	const getMealForSlot = (day: DayOfWeek, mealType: MealType) => {
-		return state.weekPlan.meals.find(
-			(m) => m.day === day && m.mealType === mealType
-		);
-	};
-
 	const totalMeals = state.weekPlan.meals.filter(
 		(m) => m.recipe !== null
 	).length;
+
+	const maxMeals = days.length * mealTypes.length;
 
 	return (
 		<>
@@ -104,7 +125,7 @@ export const PlannerScreen: React.FC = () => {
 				<div className={styles.container}>
 					{/* Days Header */}
 					<div className={styles.daysHeader}>
-						<div className={styles.mealTypeColumn} />
+						<div className={styles.mealTypeColumn}></div>
 						{days.map((day) => (
 							<div key={day} className={styles.dayColumn}>
 								<span className={styles.dayLabel}>{getDayLabel(day)}</span>
@@ -121,7 +142,7 @@ export const PlannerScreen: React.FC = () => {
 								</div>
 								{days.map((day) => {
 									const slot = getMealForSlot(day, mealType);
-									const hasRecipe = slot?.recipe !== null;
+									const hasRecipe = slot.recipe !== null;
 
 									return (
 										<div
@@ -129,9 +150,9 @@ export const PlannerScreen: React.FC = () => {
 											className={`${styles.mealSlot} ${
 												hasRecipe ? styles.filled : ""
 											}`}
-											onClick={() => slot && handleSlotClick(slot)}
+											onClick={() => handleSlotClick(day, mealType)}
 										>
-											{hasRecipe && slot?.recipe ? (
+											{hasRecipe && slot.recipe ? (
 												<>
 													<img
 														src={slot.recipe.imageUrl}
@@ -159,7 +180,9 @@ export const PlannerScreen: React.FC = () => {
 					<div className={styles.summary}>
 						<div className={styles.summaryInfo}>
 							<span className={styles.summaryLabel}>Meals planned</span>
-							<span className={styles.summaryValue}>{totalMeals} / 21</span>
+							<span className={styles.summaryValue}>
+								{totalMeals} / {maxMeals}
+							</span>
 						</div>
 
 						<Button

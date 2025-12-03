@@ -9,7 +9,15 @@ const days: DayOfWeek[] = [
 	"saturday",
 	"sunday",
 ];
-const mealTypes: MealType[] = ["breakfast", "lunch", "dinner"];
+
+// Updated to include all 5 meal categories
+const mealTypes: MealType[] = [
+	"breakfast",
+	"lunch",
+	"dinner",
+	"dessert",
+	"snack",
+];
 
 export const generateEmptyWeekPlan = (
 	startDate: Date = new Date()
@@ -59,11 +67,13 @@ export const getDayFullLabel = (day: DayOfWeek): string => {
 	return labels[day];
 };
 
-export const getMealTypeLabel = (type: MealType): string => {
+export const getMealTypeLabel = (mealType: MealType): string => {
 	const labels: Record<MealType, string> = {
 		breakfast: "Breakfast",
 		lunch: "Lunch",
 		dinner: "Dinner",
+		dessert: "Dessert",
+		snack: "Snack",
 	};
-	return labels[type];
+	return labels[mealType];
 };

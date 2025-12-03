@@ -6,7 +6,7 @@ import {NavigationTab} from "../../../types";
 import "./BottomNav.css";
 
 interface NavItem {
-	id: NavigationTab | "basket";
+	id: NavigationTab | "basket" | "planner";
 	icon: React.ReactNode;
 	activeIcon: React.ReactNode;
 	label: string;
@@ -43,6 +43,13 @@ export const BottomNav: React.FC = () => {
 			isSpecial: true,
 		},
 		{
+			id: "planner",
+			icon: <Calendar size={24} strokeWidth={1.5} />,
+			activeIcon: <Calendar size={24} strokeWidth={2.5} />,
+			label: "Planner",
+			screen: "planner",
+		},
+		{
 			id: "basket",
 			icon: <ShoppingCart size={24} strokeWidth={1.5} />,
 			activeIcon: <ShoppingCart size={24} strokeWidth={2.5} />,
@@ -74,11 +81,17 @@ export const BottomNav: React.FC = () => {
 			return;
 		}
 
+		if (item.id === "planner") {
+			navigate("planner");
+			return;
+		}
+
 		dispatch({type: "SET_ACTIVE_TAB", tab: item.id as NavigationTab});
 	};
 
 	const isActive = (itemId: string) => {
 		if (itemId === "basket") return currentScreen === "basket";
+		if (itemId === "planner") return currentScreen === "planner";
 		return activeTab === itemId;
 	};
 

@@ -12,10 +12,20 @@ import {
 	MealSlot,
 	PopupTrigger,
 	NavigationTab,
+	DayOfWeek,
+	MealType,
 } from "../types";
 import {Screen} from "../types";
 import {generateEmptyWeekPlan} from "../data/mockMealPlan";
 import {mockRecipes} from "../data/mockRecipes";
+
+// Helper to get week key
+function getWeekKey(date: Date): string {
+	const d = new Date(date);
+	d.setHours(0, 0, 0, 0);
+	d.setDate(d.getDate() - d.getDay() + 1); // Monday
+	return d.toISOString().split("T")[0];
+}
 
 interface AppState {
 	// Navigation
@@ -27,6 +37,7 @@ interface AppState {
 	// Data
 	recipes: Recipe[];
 	weekPlan: WeekPlan;
+	weekPlans: Record<string, WeekPlan>; // Store multiple weeks
 	shoppingList: ShoppingItem[];
 
 	// Popup
@@ -61,13 +72,19 @@ type AppAction =
 	| {type: "SHOW_RECIPE_SELECTOR"; show: boolean}
 	| {type: "CHANGE_WEEK"; direction: "prev" | "next"};
 
+const initialWeekPlan = generateEmptyWeekPlan();
+const initialWeekKey = getWeekKey(initialWeekPlan.weekStartDate);
+
 const initialState: AppState = {
 	currentScreen: "feed",
 	previousScreen: null,
 	selectedRecipeId: null,
 	activeTab: "feed",
 	recipes: mockRecipes,
-	weekPlan: generateEmptyWeekPlan(),
+	weekPlan: initialWeekPlan,
+	weekPlans: {
+		[initialWeekKey]: initialWeekPlan,
+	},
 	shoppingList: [],
 	showPopup: false,
 	popupTrigger: null,
@@ -192,29 +209,66 @@ function appReducer(state: AppState, action: AppAction): AppState {
 				shoppingList: [],
 			};
 
-		case "SET_MEAL_SLOT":
+		case "SET_MEAL_SLOT": {
+			const currentWeekKey = getWeekKey(state.weekPlan.weekStartDate);
+
+			// Check if slot exists in current meals
+			const slotExists = state.weekPlan.meals.some(
+				(meal) => meal.id === action.slot.id
+			);
+
+			let updatedMeals: MealSlot[];
+
+			if (slotExists) {
+				// Update existing slot
+				updatedMeals = state.weekPlan.meals.map((meal) =>
+					meal.id === action.slot.id ? {...meal, recipe: action.recipe} : meal
+				);
+			} else {
+				// Add new slot with recipe
+				updatedMeals = [
+					...state.weekPlan.meals,
+					{...action.slot, recipe: action.recipe},
+				];
+			}
+
+			const updatedWeekPlan = {
+				...state.weekPlan,
+				meals: updatedMeals,
+			};
+
 			return {
 				...state,
-				weekPlan: {
-					...state.weekPlan,
-					meals: state.weekPlan.meals.map((meal) =>
-						meal.id === action.slot.id ? {...meal, recipe: action.recipe} : meal
-					),
+				weekPlan: updatedWeekPlan,
+				weekPlans: {
+					...state.weekPlans,
+					[currentWeekKey]: updatedWeekPlan,
 				},
 				showRecipeSelector: false,
 				selectedMealSlot: null,
 			};
+		}
 
-		case "REMOVE_MEAL_SLOT":
+		case "REMOVE_MEAL_SLOT": {
+			const currentWeekKey = getWeekKey(state.weekPlan.weekStartDate);
+			const updatedMeals = state.weekPlan.meals.map((meal) =>
+				meal.id === action.slotId ? {...meal, recipe: null} : meal
+			);
+
+			const updatedWeekPlan = {
+				...state.weekPlan,
+				meals: updatedMeals,
+			};
+
 			return {
 				...state,
-				weekPlan: {
-					...state.weekPlan,
-					meals: state.weekPlan.meals.map((meal) =>
-						meal.id === action.slotId ? {...meal, recipe: null} : meal
-					),
+				weekPlan: updatedWeekPlan,
+				weekPlans: {
+					...state.weekPlans,
+					[currentWeekKey]: updatedWeekPlan,
 				},
 			};
+		}
 
 		case "ADD_WEEK_TO_SHOPPING": {
 			const recipesInPlan = state.weekPlan.meals
@@ -292,14 +346,32 @@ function appReducer(state: AppState, action: AppAction): AppState {
 			};
 
 		case "CHANGE_WEEK": {
+			// Save current week plan
+			const currentWeekKey = getWeekKey(state.weekPlan.weekStartDate);
+			const updatedWeekPlans = {
+				...state.weekPlans,
+				[currentWeekKey]: state.weekPlan,
+			};
+
+			// Calculate new week date
 			const currentDate = new Date(state.weekPlan.weekStartDate);
 			const newDate = new Date(currentDate);
 			newDate.setDate(
 				currentDate.getDate() + (action.direction === "next" ? 7 : -7)
 			);
+
+			// Get or create week plan for new week
+			const newWeekKey = getWeekKey(newDate);
+			const newWeekPlan =
+				updatedWeekPlans[newWeekKey] || generateEmptyWeekPlan(newDate);
+
 			return {
 				...state,
-				weekPlan: generateEmptyWeekPlan(newDate),
+				weekPlan: newWeekPlan,
+				weekPlans: {
+					...updatedWeekPlans,
+					[newWeekKey]: newWeekPlan,
+				},
 			};
 		}
 
@@ -348,6 +420,14 @@ export const AppProvider: React.FC<{children: ReactNode}> = ({children}) => {
 			return () => clearTimeout(timer);
 		}
 	}, [state.hasShownTimerPopup, state.emailCaptured]);
+
+	// Debug: Log meal types on mount
+	useEffect(() => {
+		console.log("Initial week plan meals:", initialState.weekPlan.meals);
+		console.log("Meal types present:", [
+			...new Set(initialState.weekPlan.meals.map((m) => m.mealType)),
+		]);
+	}, []);
 
 	return (
 		<AppContext.Provider
